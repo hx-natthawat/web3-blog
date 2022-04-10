@@ -4,6 +4,15 @@ pragma solidity ^0.8.9;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+/*
+This contract allows the owner to create and edit posts, 
+and for anyone to fetch posts.
+
+To make this smart contract permissionless, 
+you could remove the onlyOwner modifier and 
+use The Graph to index and query posts by owner.
+*/
+
 contract Blog {
 
     /* ====== Variable ===== */
@@ -20,6 +29,14 @@ contract Blog {
         bool published;
     }
 
+    /* ====== Modifier ===== */
+    /* this modifier means only the contract owner can */
+    /* invoke the function */
+    modifier onlyOwner() {
+      require(msg.sender == owner);
+        _;
+    }
+
     /* mappings can be seen as hash tables */
     /* here we create lookups for posts by id and posts by ipfs hash */
     mapping(uint => Post) private idToPost;
@@ -29,7 +46,7 @@ contract Blog {
     /* events facilitate communication between smart contractsand their user interfaces  */
     /* i.e. we can create listeners for events in the client and also use them in The Graph  */
     event PostCreated(uint id, string title, string hash);
-    event PostUpdated(uint id, string title, string hash, bool published)
+    event PostUpdated(uint id, string title, string hash, bool published);
     // event PostDeleted ???
 
     /* ====== Constructor ===== */
@@ -47,7 +64,7 @@ contract Blog {
         name = _name;
     }
 
-    /* transfers ownership of the contract to another address */
+    /* Permissionless: transfers ownership of the contract to another address */
     function transferOwnership(address newOwner) public onlyOwner {
         owner = newOwner;
     }
@@ -95,11 +112,4 @@ contract Blog {
         }
         return posts;
     }
-
-    /* this modifier means only the contract owner can */
-    /* invoke the function */
-    modifier onlyOwner() {
-      require(msg.sender == owner);
-    _;
 }
-
